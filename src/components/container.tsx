@@ -1,8 +1,11 @@
-import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useLocation, Link, useNavigate, Navigate } from "react-router-dom";
 import { FaHome, FaCalendarAlt, FaCog, FaUser, FaBell } from "react-icons/fa";
 import { IoLogOut } from "react-icons/io5";
 import { motion } from "framer-motion";
+import { handleLogout } from "@/api/auth";
+
+import { useAdminStore } from "@/store/data";
 
 interface ContainerProps {
 	children: React.ReactNode;
@@ -23,6 +26,41 @@ const hoverVariants = {
 
 const Container: React.FC<ContainerProps> = ({ children }) => {
 	const location = useLocation();
+	const navigate = useNavigate();
+
+	const { adminData, loadAdminData, hasLoaded } = useAdminStore();
+
+	useEffect(() => {
+		loadAdminData();
+	}, [loadAdminData]);
+
+	useEffect(() => {
+		if (!hasLoaded) return;
+
+		if (adminData === null) {
+			navigate("/");
+			return;
+		}
+
+		const { response } = adminData;
+		const accessToken = response?.data?.session?.access_token;
+		const expiresAt = response?.data?.session?.expires_at;
+		const currentTime = Math.floor(Date.now() / 1000);
+
+		if (!accessToken || expiresAt <= currentTime) {
+			navigate("/");
+		}
+	}, [adminData, hasLoaded, navigate]);
+
+	const onLogout = async () => {
+		await handleLogout(navigate);
+	};
+
+	console.log(adminData);
+
+	if (adminData === null) {
+		return <Navigate to='/' />;
+	}
 
 	const navItems = [
 		{ name: "Overview", path: "/overview", icon: <FaHome /> },
@@ -70,11 +108,14 @@ const Container: React.FC<ContainerProps> = ({ children }) => {
 						Welcome to iTour Admin
 					</div>
 					<div className='flex items-center space-x-6'>
+						<h1>{adminData?.name}</h1>
 						<div className='flex items-center space-x-2 cursor-pointer'>
 							<FaBell size={22} />
 						</div>
 						<div className='flex items-center space-x-2 cursor-pointer'>
-							<IoLogOut size={25} />
+							<button onClick={onLogout}>
+								<IoLogOut size={25} />
+							</button>
 						</div>
 					</div>
 				</header>

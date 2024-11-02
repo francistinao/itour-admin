@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useAdminStore } from "@/store/data";
+
 import Container from "@/components/container";
 import { MapContainer, TileLayer } from "react-leaflet";
 import { Card } from "@/components/card";
@@ -12,6 +14,14 @@ interface OverviewProps {
 const Overview: React.FC<OverviewProps> = ({
 	center = [8.956573, 125.596894],
 }) => {
+	const { adminData, loadAdminData } = useAdminStore();
+
+	console.log("adminData", adminData);
+
+	useEffect(() => {
+		loadAdminData();
+	}, [loadAdminData]);
+
 	const eventData = [
 		{
 			id: 1,
@@ -43,6 +53,12 @@ const Overview: React.FC<OverviewProps> = ({
 		<Container>
 			<div className='flex flex-col gap-2'>
 				<h1 className='font-bold text-2xl'>Events Details</h1>
+				<h1>
+					Office:{" "}
+					<b className='bg-primGreen text-white font-semibold px-2 py-1 rounded-md'>
+						{adminData?.office[0].office_name}
+					</b>
+				</h1>
 				<div className='sm:flex sm:gap-3 md:grid grid-cols-3 gap-x-3 my-3'>
 					{eventData.map((event) => (
 						<Card

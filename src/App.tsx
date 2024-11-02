@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Login } from "@/pages/auth";
+import { Login, Signup } from "@/pages/auth";
 import { Overview, Events } from "@/pages/dashboard";
 import Preload from "@/pages/preload";
 import "@radix-ui/themes/styles.css";
@@ -22,6 +22,10 @@ function App() {
 				<Route
 					path='/'
 					element={<Login />}
+				/>
+				<Route
+					path='/signup'
+					element={<Signup />}
 				/>
 				<Route
 					path='/overview'

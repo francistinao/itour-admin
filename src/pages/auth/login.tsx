@@ -1,50 +1,33 @@
 import React, { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { handleLogin } from "@/api/auth";
 import { Toaster, toast } from "sonner";
-import supabase from "@/lib/supabase";
 import logo from "@/assets/logo-mini.jpg";
 import bg from "@/assets/bg.jpg";
 
 const Login: React.FC = () => {
+	const navigate = useNavigate();
 	const emailInputRef = useRef<HTMLInputElement | null>(null);
 	const passwordInputRef = useRef<HTMLInputElement | null>(null);
 
-	const handleLogin = async (e: React.FormEvent) => {
+	const onLoginSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		const email = emailInputRef?.current?.value as unknown as string;
-		const password = passwordInputRef?.current?.value as unknown as string;
+
+		const email = emailInputRef?.current?.value as string;
+		const password = passwordInputRef?.current?.value as string;
 
 		if (!email || !password) {
-			toast.error("Please input all fields!");
+			toast.error("Please fill in all fields!");
 			return;
 		}
 
-		const { data, error } = await supabase.auth.signInWithPassword({
-			email,
-			password,
-		});
-
-		if (error) {
+		const result = await handleLogin({ email, password });
+		if (result) {
+			toast.success("Login successful!");
+			navigate("/overview");
+		} else {
 			toast.error("Invalid credentials. Please try again.");
-			return;
 		}
-
-		console.log(data);
-
-		// localStorage.setItem("token", data.access_token);
-		// localStorage.setItem(
-		// 	"admin",
-		// 	JSON.stringify({
-		// 		branch_id: userData[0].branch_id,
-		// 		email,
-		// 		id: data?.user?.id,
-		// 		name: userData[0]?.first_name + " " + userData[0]?.last_name,
-		// 		role: userData[0]?.role,
-		// 		branch_name: branchData[0].branch_name,
-		// 	})
-		// );
-
-		window.location.href = "/dashboard";
 	};
 
 	useEffect(() => {
@@ -59,7 +42,7 @@ const Login: React.FC = () => {
 			/>
 			<div className='flex'>
 				<form
-					onSubmit={(e) => handleLogin(e)}
+					onSubmit={(e) => onLoginSubmit(e)}
 					className='xs:mt-32 md:mt-36 lg:mt-44 px-8 xs:w-full md:w-11/12 lg:w-6/12'>
 					<Link to='/'>
 						<img
@@ -89,11 +72,17 @@ const Login: React.FC = () => {
 							ref={passwordInputRef}
 						/>
 					</div>
-					<button
-						onClick={handleLogin}
-						className='w-full bg-secGreen text-white py-2 text-center  font-semibold rounded-md mt-4'>
+					<button className='w-full bg-secGreen text-white py-2 text-center  font-semibold rounded-md mt-4'>
 						Log in
 					</button>
+					<p className='text-center my-3'>
+						Don't have an account yet?{" "}
+						<Link
+							className='font-semibold italic text-secGreen '
+							to='/signup'>
+							Sign Up
+						</Link>
+					</p>
 				</form>
 				<img
 					src={bg}
