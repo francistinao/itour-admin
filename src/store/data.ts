@@ -7,6 +7,19 @@ interface OfficeProps {
 	office_name: string;
 }
 
+interface EventProps {
+	id: number;
+	title?: string;
+	description?: string;
+	location?: string;
+	x_coordinate: number;
+	y_coordinate: number;
+	number_of_participants?: number;
+	office_id: number;
+	admin_id: string;
+	created_at?: string;
+}
+
 interface AdminData {
 	id: string;
 	name: string;
@@ -116,6 +129,11 @@ interface AdminStore {
 	setAdminData: (data: AdminData | null) => void;
 }
 
+interface EventStore {
+	events: Array<EventProps> | null;
+	setEvents: (events: Array<EventProps> | null) => void;
+}
+
 interface HandleOfficeProps {
 	offices: Array<OfficeProps> | null;
 	setOffices: (offices: Array<OfficeProps> | null) => void;
@@ -140,6 +158,11 @@ export const useOfficeStore = create<HandleOfficeProps>((set) => ({
 			console.error("Error getting offices", err);
 		}
 	},
+}));
+
+export const useEventStore = create<EventStore>((set) => ({
+	events: null,
+	setEvents: (events) => set({ events }),
 }));
 
 export const useAdminStore = create<AdminStore>((set) => ({

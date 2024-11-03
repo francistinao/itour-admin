@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAdminStore } from "@/store/data";
-
 import Container from "@/components/container";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Card } from "@/components/card";
 import { FaCalendarAlt, FaUsers, FaStar } from "react-icons/fa";
 import "leaflet/dist/leaflet.css";
+import { handleGetCoordinatesOfEvents } from "@/api/event";
 
 interface OverviewProps {
 	center?: [number, number];
@@ -15,12 +15,28 @@ const Overview: React.FC<OverviewProps> = ({
 	center = [8.956573, 125.596894],
 }) => {
 	const { adminData, loadAdminData } = useAdminStore();
+	const [coordinates, setCoordinates] = useState<[number, number][]>([]);
 
-	console.log("adminData", adminData);
-
+	console.log(coordinates);
 	useEffect(() => {
 		loadAdminData();
 	}, [loadAdminData]);
+
+	useEffect(() => {
+		const fetchCoordinates = async () => {
+			if (adminData?.office_id) {
+				const coords = await handleGetCoordinatesOfEvents(adminData.office_id);
+				if (coords) {
+					const formattedCoords: [number, number][] = coords.map(
+						(coord) => [coord[1], coord[0]] as [number, number]
+					);
+					setCoordinates(formattedCoords);
+				}
+			}
+		};
+
+		fetchCoordinates();
+	}, [adminData]);
 
 	const eventData = [
 		{
@@ -76,24 +92,26 @@ const Overview: React.FC<OverviewProps> = ({
 				Map of Caraga State University
 			</h1>
 			<MapContainer
-				//eslint-disable-next-line
-				//@ts-ignore
 				center={center}
 				zoom={15}
-				zoomSnap={0.5}
-				maxZoom={23}
 				style={{ width: "100%", height: "500px" }}
 				dragging={true}
 				scrollWheelZoom={true}
 				zoomAnimation={true}
-				zoomAnimationThreshold={4}
 				className='relative'>
 				<TileLayer
 					url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-					//eslint-disable-next-line
-					//@ts-ignore
 					attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 				/>
+				{coordinates.map((coord, index) => (
+					<Marker
+						key={index}
+						position={coord}>
+						<Popup>
+							Event {index + 1} <br /> Coordinates: {coord[0]}, {coord[1]}
+						</Popup>
+					</Marker>
+				))}
 			</MapContainer>
 		</Container>
 	);

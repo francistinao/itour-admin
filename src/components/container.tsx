@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { useLocation, Link, useNavigate, Navigate } from "react-router-dom";
-import { FaHome, FaCalendarAlt, FaCog, FaUser, FaBell } from "react-icons/fa";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { FaHome, FaCalendarAlt, FaCog, FaBell } from "react-icons/fa";
 import { IoLogOut } from "react-icons/io5";
 import { motion } from "framer-motion";
 import { handleLogout } from "@/api/auth";
@@ -28,45 +28,49 @@ const Container: React.FC<ContainerProps> = ({ children }) => {
 	const location = useLocation();
 	const navigate = useNavigate();
 
-	const { adminData, loadAdminData, hasLoaded } = useAdminStore();
+	const { adminData, loadAdminData } = useAdminStore();
+
+	const isTokenExpired = (expiresAt: number) => {
+		const currentTime = Math.floor(Date.now() / 1000);
+		return expiresAt <= currentTime;
+	};
+
+	useEffect(() => {
+		let session;
+		//eslint-disable-next-line
+		//@ts-ignore
+		if (typeof adminData?.response?.data === "string") {
+			try {
+				//eslint-disable-next-line
+				//@ts-ignore
+				session = JSON.parse(adminData.response.data);
+			} catch (error) {
+				console.error("Failed to parse session data:", error);
+				navigate("/");
+				return;
+			}
+		} else {
+			//eslint-disable-next-line
+			//@ts-ignore
+			session = adminData?.response?.data;
+		}
+
+		if (
+			!session?.session?.access_token ||
+			isTokenExpired(session?.session?.expires_at)
+		) {
+			navigate("/");
+		}
+	}, [navigate, adminData]);
 
 	useEffect(() => {
 		loadAdminData();
 	}, [loadAdminData]);
 
-	useEffect(() => {
-		if (!hasLoaded) return;
-
-		if (adminData === null) {
-			navigate("/");
-			return;
-		}
-
-		const { response } = adminData;
-		const accessToken = response?.data?.session?.access_token;
-		const expiresAt = response?.data?.session?.expires_at;
-		const currentTime = Math.floor(Date.now() / 1000);
-
-		if (!accessToken || expiresAt <= currentTime) {
-			navigate("/");
-		}
-	}, [adminData, hasLoaded, navigate]);
-
-	const onLogout = async () => {
-		await handleLogout(navigate);
-	};
-
-	console.log(adminData);
-
-	if (adminData === null) {
-		return <Navigate to='/' />;
-	}
-
 	const navItems = [
 		{ name: "Overview", path: "/overview", icon: <FaHome /> },
 		{ name: "Events", path: "/events", icon: <FaCalendarAlt /> },
 		{ name: "Settings", path: "/settings", icon: <FaCog /> },
-		{ name: "Profile", path: "/profile", icon: <FaUser /> },
 	];
 
 	return (
@@ -113,7 +117,7 @@ const Container: React.FC<ContainerProps> = ({ children }) => {
 							<FaBell size={22} />
 						</div>
 						<div className='flex items-center space-x-2 cursor-pointer'>
-							<button onClick={onLogout}>
+							<button onClick={() => handleLogout(navigate)}>
 								<IoLogOut size={25} />
 							</button>
 						</div>
