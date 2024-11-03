@@ -12,8 +12,6 @@ const Events: React.FC = () => {
 	const { events, setEvents } = useEventStore();
 	const [isAdd, setIsAdd] = useState(false);
 
-	console.log(events);
-
 	useEffect(() => {
 		const fetchEvents = async () => {
 			if (adminData?.office_id) {
@@ -23,7 +21,7 @@ const Events: React.FC = () => {
 		};
 
 		fetchEvents();
-	}, [adminData?.office_id]);
+	}, [adminData?.office_id, isAdd]);
 
 	return (
 		<Container>

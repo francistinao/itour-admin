@@ -15,13 +15,11 @@ import { useAdminStore } from "@/store/data";
 interface AddEventModalProps {
 	setIsAdd: Dispatch<SetStateAction<boolean>>;
 	center?: [number, number];
-	handleGetEvents: () => void;
 }
 
 const AddEventModal: React.FC<AddEventModalProps> = ({
 	setIsAdd,
 	center = [8.956573, 125.596894],
-	handleGetEvents,
 }) => {
 	const [selectedImageFile, setSelectedImageFile] = useState<string | null>(
 		null
@@ -95,7 +93,6 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
 			toast.success(`${event.title} has been successfully added!`);
 			//eslint-disable-next-line
 			//@ts-ignore
-			handleGetEvents(adminData?.office_id);
 			setIsAdd(false);
 		} catch (err) {
 			console.error("Error adding new item:", err);
