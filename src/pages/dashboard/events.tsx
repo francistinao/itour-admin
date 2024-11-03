@@ -45,7 +45,7 @@ const Events: React.FC = () => {
 						Add
 					</button>
 				</div>
-				<div className='grid grid-cols-5 gap-x-4'>
+				<div className='grid grid-cols-5 gap-4'>
 					{Array.isArray(events) && events.length !== 0 ? (
 						events.map((event, index) => (
 							<EventCard
