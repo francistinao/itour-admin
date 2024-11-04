@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Card } from "@/components/card";
 import { FaCalendarAlt, FaUsers, FaStar } from "react-icons/fa";
 import "leaflet/dist/leaflet.css";
-import { handleGetCoordinatesOfEvents } from "@/api/event";
+import { handleGetCoordinatesOfEvents, handleGetDetails } from "@/api/event";
 
 interface OverviewProps {
 	center?: [number, number];
@@ -16,11 +16,19 @@ const Overview: React.FC<OverviewProps> = ({
 }) => {
 	const { adminData, loadAdminData } = useAdminStore();
 	const [coordinates, setCoordinates] = useState<[number, number][]>([]);
+	const [details, setDetails] = useState<{
+		number_of_events: number;
+		total_participants: number;
+		most_attended_event: number;
+	}>({
+		number_of_events: 0,
+		total_participants: 0,
+		most_attended_event: 0,
+	});
 
-	console.log(coordinates);
 	useEffect(() => {
 		loadAdminData();
-	}, [loadAdminData]);
+	}, []);
 
 	useEffect(() => {
 		const fetchCoordinates = async () => {
@@ -44,26 +52,41 @@ const Overview: React.FC<OverviewProps> = ({
 			icon: FaCalendarAlt,
 			label: "Number of Events",
 			description: "Total number of upcoming events",
-			value: 25,
+			value: details.number_of_events ?? 0,
 			bgColor: "bg-blue-500",
 		},
 		{
 			id: 2,
 			icon: FaUsers,
-			label: "Most Number of Attendees",
-			description: "Highest attendance at an event",
-			value: 150,
+			label: "Total Attendees",
+			description: "Total Number of Attendees in all events",
+			value: details.total_participants ?? 0,
 			bgColor: "bg-green-500",
 		},
 		{
 			id: 3,
 			icon: FaStar,
 			label: "Most Attended Event",
-			description: "Event with the highest number of attendees",
-			value: 200,
+			description:
+				"Number of participants of the Event with the highest number of attendees",
+			value: details.most_attended_event ?? 0,
 			bgColor: "bg-yellow-500",
 		},
 	];
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const data = await handleGetDetails(adminData?.office_id);
+				setDetails(data);
+			} catch (error) {
+				console.error("Error fetching event data:", error);
+			}
+		};
+
+		fetchData();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [handleGetDetails]);
 
 	return (
 		<Container>

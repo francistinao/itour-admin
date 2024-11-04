@@ -1,7 +1,5 @@
-import Cookies from "js-cookie";
 import supabase from "@/lib/supabase";
 import { Admin } from "@/types/global";
-import { useAdminStore } from "@/store/data";
 import { NavigateFunction } from "react-router-dom";
 
 export const handleSignUp = async ({ ...input }) => {
@@ -57,6 +55,7 @@ export const handleLogin = async ({
 	email: string;
 	password: string;
 }) => {
+	console.log("Function called");
 	try {
 		const response = await supabase.auth.signInWithPassword({ email, password });
 		const uid = response?.data?.user?.id;
@@ -77,11 +76,7 @@ export const handleLogin = async ({
 
 		const responseData = { response, ...data[0], office };
 
-		Cookies.set("adminData", JSON.stringify(responseData), {
-			expires: 1,
-			secure: true,
-			sameSite: "Strict",
-		});
+		localStorage.setItem("adminData", JSON.stringify(responseData));
 
 		return responseData;
 	} catch (err) {
@@ -90,14 +85,11 @@ export const handleLogin = async ({
 };
 
 export const handleLogout = async (navigate: NavigateFunction) => {
-	const { setAdminData } = useAdminStore.getState();
-
 	try {
 		const { error } = await supabase.auth.signOut();
 		if (error) throw new Error("Error signing out");
 
-		Cookies.remove("adminData");
-		setAdminData(null);
+		localStorage.removeItem("adminData");
 
 		console.log("Logout successful");
 

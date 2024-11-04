@@ -4,17 +4,19 @@ import { handleLogin } from "@/api/auth";
 import { Toaster, toast } from "sonner";
 import logo from "@/assets/logo-mini.jpg";
 import bg from "@/assets/bg.jpg";
+import { useAdminStore } from "@/store/data";
 
 const Login: React.FC = () => {
 	const navigate = useNavigate();
 	const emailInputRef = useRef<HTMLInputElement | null>(null);
 	const passwordInputRef = useRef<HTMLInputElement | null>(null);
+	const { loadAdminData } = useAdminStore();
 
 	const onLoginSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		const email = emailInputRef?.current?.value as string;
-		const password = passwordInputRef?.current?.value as string;
+		const email = emailInputRef.current?.value as string;
+		const password = passwordInputRef.current?.value as string;
 
 		if (!email || !password) {
 			toast.error("Please fill in all fields!");
@@ -22,9 +24,13 @@ const Login: React.FC = () => {
 		}
 
 		const result = await handleLogin({ email, password });
+
 		if (result) {
+			loadAdminData();
 			toast.success("Login successful!");
-			navigate("/overview");
+			setTimeout(() => {
+				navigate("/overview");
+			}, 300);
 		} else {
 			toast.error("Invalid credentials. Please try again.");
 		}

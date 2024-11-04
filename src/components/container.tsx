@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import { FaHome, FaCalendarAlt, FaCog, FaBell } from "react-icons/fa";
+import { FaHome, FaCalendarAlt } from "react-icons/fa";
 import { IoLogOut } from "react-icons/io5";
 import { motion } from "framer-motion";
 import { handleLogout } from "@/api/auth";
@@ -27,7 +27,6 @@ const hoverVariants = {
 const Container: React.FC<ContainerProps> = ({ children }) => {
 	const location = useLocation();
 	const navigate = useNavigate();
-
 	const { adminData, loadAdminData } = useAdminStore();
 
 	const isTokenExpired = (expiresAt: number) => {
@@ -36,41 +35,30 @@ const Container: React.FC<ContainerProps> = ({ children }) => {
 	};
 
 	useEffect(() => {
-		let session;
-		//eslint-disable-next-line
-		//@ts-ignore
-		if (typeof adminData?.response?.data === "string") {
-			try {
-				//eslint-disable-next-line
-				//@ts-ignore
-				session = JSON.parse(adminData.response.data);
-			} catch (error) {
-				console.error("Failed to parse session data:", error);
+		const loadSessionData = async () => {
+			if (!adminData) {
 				navigate("/");
-				return;
+			} else {
+				const session =
+					typeof adminData?.response?.data === "string"
+						? JSON.parse(adminData.response.data)
+						: adminData?.response?.data;
+
+				if (
+					!session?.session?.access_token ||
+					isTokenExpired(session?.session?.expires_at)
+				) {
+					navigate("/");
+				}
 			}
-		} else {
-			//eslint-disable-next-line
-			//@ts-ignore
-			session = adminData?.response?.data;
-		}
+		};
 
-		if (
-			!session?.session?.access_token ||
-			isTokenExpired(session?.session?.expires_at)
-		) {
-			navigate("/");
-		}
-	}, [navigate, adminData]);
-
-	useEffect(() => {
-		loadAdminData();
-	}, [loadAdminData]);
+		loadSessionData();
+	}, [navigate, adminData, loadAdminData]);
 
 	const navItems = [
 		{ name: "Overview", path: "/overview", icon: <FaHome /> },
 		{ name: "Events", path: "/events", icon: <FaCalendarAlt /> },
-		{ name: "Settings", path: "/settings", icon: <FaCog /> },
 	];
 
 	return (
@@ -112,9 +100,9 @@ const Container: React.FC<ContainerProps> = ({ children }) => {
 						Welcome to iTour Admin
 					</div>
 					<div className='flex items-center space-x-6'>
-						<h1>{adminData?.name}</h1>
-						<div className='flex items-center space-x-2 cursor-pointer'>
-							<FaBell size={22} />
+						<div className='flex flex-col'>
+							<h1 className='font-semibold'>{adminData?.name}</h1>
+							<h1>{adminData?.designation}</h1>
 						</div>
 						<div className='flex items-center space-x-2 cursor-pointer'>
 							<button onClick={() => handleLogout(navigate)}>

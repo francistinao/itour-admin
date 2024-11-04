@@ -5,7 +5,7 @@ import { handleSignUp } from "@/api/auth";
 
 import Dropdown from "react-dropdown";
 import "react-dropdown/style.css";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { useOfficeStore } from "@/store/data";
 
 const Signup: React.FC = () => {
@@ -52,11 +52,11 @@ const Signup: React.FC = () => {
 		try {
 			const adminData = await handleSignUp(input);
 			if (adminData) {
-				toast.success("Signup successful!");
+				toast.success("Account newly registered successful!");
 
 				setTimeout(() => {
 					navigate("/");
-				}, 2000);
+				}, 3000);
 			}
 		} catch (err) {
 			toast.error("Signup failed. Please try again.");
@@ -70,6 +70,10 @@ const Signup: React.FC = () => {
 
 	return (
 		<div className='font-main'>
+			<Toaster
+				richColors
+				position='bottom-right'
+			/>
 			<div className='xxxxs:flex flex-col gap-4 md:w-full h-screen grid place-items-center'>
 				<form
 					onSubmit={handleSignup}

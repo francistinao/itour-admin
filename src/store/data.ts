@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import supabase from "@/lib/supabase";
-import Cookies from "js-cookie";
 
 interface OfficeProps {
 	id: number;
@@ -123,7 +122,6 @@ interface AdminData {
 }
 
 interface AdminStore {
-	hasLoaded: boolean;
 	adminData: AdminData | null;
 	loadAdminData: () => void;
 	setAdminData: (data: AdminData | null) => void;
@@ -167,18 +165,15 @@ export const useEventStore = create<EventStore>((set) => ({
 
 export const useAdminStore = create<AdminStore>((set) => ({
 	adminData: null,
-	hasLoaded: false,
 	loadAdminData: () => {
 		set((state) => {
-			if (!state.hasLoaded) {
-				const adminCookie = Cookies.get("adminData");
-				if (adminCookie) {
-					return {
-						adminData: JSON.parse(adminCookie),
-						hasLoaded: true,
-					};
-				}
-				return { hasLoaded: true };
+			const adminCookie = localStorage.getItem("adminData");
+			if (adminCookie) {
+				return {
+					...state,
+					adminData: JSON.parse(adminCookie),
+					hasLoaded: true,
+				};
 			}
 			return state;
 		});

@@ -2,15 +2,31 @@ import React, { useState, useEffect } from "react";
 import Container from "@/components/container";
 import { IoMdAdd } from "react-icons/io";
 import AddEventModal from "@/components/add-event-modal";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import { useAdminStore, useEventStore } from "@/store/data";
-import { handleGetEvents } from "@/api/event";
+import { handleGetEvents, handleDeleteEvent } from "@/api/event";
 import EventCard from "@/components/event-card";
 
 const Events: React.FC = () => {
 	const { adminData } = useAdminStore();
 	const { events, setEvents } = useEventStore();
 	const [isAdd, setIsAdd] = useState(false);
+
+	const handleDeleteEventFoo = (event_id: number) => {
+		try {
+			toast.warning("Do you want to delete? Ignore if not", {
+				action: {
+					label: "Confirm",
+					onClick: async () => {
+						await handleDeleteEvent(event_id);
+						toast.success("Event successfully deleted.");
+					},
+				},
+			});
+		} catch (err) {
+			console.error(err);
+		}
+	};
 
 	useEffect(() => {
 		const fetchEvents = async () => {
@@ -21,14 +37,15 @@ const Events: React.FC = () => {
 		};
 
 		fetchEvents();
-	}, [adminData?.office_id, isAdd]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [adminData?.office_id, isAdd, handleDeleteEventFoo]);
 
 	return (
 		<Container>
 			<div className='flex flex-col gap-3 w-full'>
 				<Toaster
 					richColors
-					position='bottom-right'
+					position='top-center'
 				/>
 				<div className='flex justify-between items-center'>
 					<h1>
@@ -53,8 +70,7 @@ const Events: React.FC = () => {
 								//eslint-disable-next-line
 								//@ts-ignore
 								event={event}
-								// onDelete={() => onDelete(event.id)}
-								// onUpdate={() => onUpdate(event.id)}
+								handleDeleteEventFoo={handleDeleteEventFoo}
 							/>
 						))
 					) : (
